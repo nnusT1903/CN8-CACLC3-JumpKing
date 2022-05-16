@@ -5,6 +5,7 @@
 #include "Game.h"
 #include <math.h>
 #include "header.h"
+#include "timer.h"
 
 #define gravity 0.8
 #define MAX_FALL_SPEED 20
@@ -44,6 +45,7 @@ private:
     SDL_Rect srcRect, destRect, collider;
 
     Mix_Chunk* High = NULL;
+    Mix_Chunk* potion_music = NULL;
 
     SDL_Rect RunningRight[5];
     SDL_Rect RunningLeft[5];
@@ -53,6 +55,7 @@ private:
     bool onGround;
     bool isWin;
 
+    Timer buffTime;
 public:
     GameObject(int x, int y);
     ~GameObject();
@@ -66,12 +69,17 @@ public:
     void Update(SDL_Rect Tile[][60], int Mapping[][60]);
 
     void RunLeft();
+    void RunLeftBuff();
     void RunRight();
+    void RunRightBuff();
 
     void PrepareJump();
     void Jump();
+    void JumpBuff();
     void JumpLeft();
+    void JumpLeftBuff();
     void JumpRight();
+    void JumpRightBuff();
 
 
     void StopRunRight();
@@ -99,8 +107,8 @@ public:
     static const int xspeed = 1;
     static const int yspeed = 1;
 
-    int maxxspeed = 6;
-    int maxyspeed = 8;
+    static const int maxxspeed = 6;
+    static const int maxyspeed = 8;
 
 
     static const int KING_WIDTH = 48;
@@ -108,6 +116,6 @@ public:
 
     SDL_Rect Camera = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
 
-    bool isSpdBuff, isJmpBuff, isLag;
+    bool isSpdBuff, isSpdBuff_forDraw, isJmpBuff, isJmpBuff_forDraw, isLag, isLag_forDraw, godPot_draw;
 };
 #endif

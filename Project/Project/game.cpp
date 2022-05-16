@@ -14,12 +14,25 @@ SDL_Texture* babe = NULL;
 SDL_Texture* spdPot = NULL;
 SDL_Texture* jmpPot = NULL;
 SDL_Texture* lagPot = NULL;
+SDL_Texture* godPot = NULL; // erase lag effect
 Mix_Music* Music = NULL;
 
 
 SDL_Rect spdSrcRect = { 0,0,32,32 };
-SDL_Rect spdRect = { 416,3744,32,32 };
-SDL_Rect spdDestRect = { 416,3744,32,32 };
+SDL_Rect spdRect = { 896,3456,32,32 };
+SDL_Rect spdDestRect = { 896,3456,32,32 };
+
+SDL_Rect jmpSrcRect = { 0,0,32,32 };
+SDL_Rect jmpRect = { 272,1328,32,32};
+SDL_Rect jmpDestRect = { 272,1328,32,32};
+
+SDL_Rect lagSrcRect = { 0,0,32,32 };
+SDL_Rect lagRect = {288,2576,32,32};
+SDL_Rect lagDestRect = {288,2576,32,32};
+
+SDL_Rect godSrcRect = { 0,0,32,32 };
+SDL_Rect godRect = {32,1792,32,32};
+SDL_Rect godDestRect = {32,1792,32,32};
 
 SDL_Rect babeSrcRect = { 0,0,48,48 };
 SDL_Rect babeRect = { 592,112,48,48 };
@@ -69,7 +82,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     }
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
-    Music = Mix_LoadMUS("sound/music.wav");
+    Music = Mix_LoadMUS("sound/win.wav");
 
     win = false;
     isRetrying = true;
@@ -77,14 +90,16 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     background = texture::LoadTexture("image/main_image/background.png");
     foreground = texture::LoadTexture("image/main_image/foreground.png");
     spdPot = texture::LoadTexture("image/speed_pot.png");
-    jmpPot = texture::LoadTexture("image/rsz_jump_pot.png");
-    lagPot = texture::LoadTexture("image/rsz_lag_pot.png");
+    jmpPot = texture::LoadTexture("image/jump_pot.png");
+    lagPot = texture::LoadTexture("image/lag_pot.png");
+    godPot = texture::LoadTexture("image/god_pot.png"); 
     babe = texture::LoadTexture("image/babe.png");
     victory = texture::LoadTexture("image/victory.png");
-    string fileName = "image/icon.bmp";
-    SDL_Surface* loadedSurface = SDL_LoadBMP(fileName.c_str());
-    SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 255, 0, 255));
 
+    //Icon loading.
+    string icoName = "image/icon.bmp";
+    SDL_Surface* loadedSurface = SDL_LoadBMP(icoName.c_str());
+    SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 255, 0, 255));
     SDL_SetWindowIcon(window, loadedSurface);
     SDL_FreeSurface(loadedSurface);
 
@@ -159,15 +174,18 @@ void Game::handleEvents()
                 switch (player->inputType.jump)
                 {
                 case 0:
-                    player->Jump();
+                    if (player->isJmpBuff == true)player->JumpBuff();
+                    else player->Jump();
                     break;
 
                 case 1:
-                    player->JumpRight();
+                    if (player->isJmpBuff == true)player->JumpRightBuff();
+                    else player->JumpRight();
                     break;
 
                 case 2:
-                    player->JumpLeft();
+                    if (player->isJmpBuff == true)player->JumpLeftBuff();
+                    else player->JumpLeft();
                     break;
                 }
             }
@@ -179,6 +197,9 @@ void Game::update()
     player->Update(mapper->tile, mapper->mapping);
     babeDestRect.y = babeRect.y - player->Camera.y;
     spdDestRect.y = spdRect.y - player->Camera.y;
+    jmpDestRect.y = jmpRect.y - player->Camera.y;
+    lagDestRect.y = lagRect.y - player->Camera.y;
+    godDestRect.y = godRect.y - player->Camera.y;
     if (player->isWin == true)
     {
         win = true;
@@ -197,11 +218,14 @@ void Game::render()
     SDL_RenderClear(renderer);
     mapper->DrawMap(player->Camera);
     texture::Draw(background, player->Camera, BgDest);
+    // texture::Draw(foreground, player->Camera, BgDest); //for checking the blocks whether they fit or not
     player->Render();
     texture::Draw(foreground, player->Camera, BgDest);
-    
     texture::Draw(babe, babeSrcRect, babeDestRect);
-    if(player->isSpdBuff == false) texture::Draw(spdPot, spdSrcRect, spdDestRect);
+    if(player->isSpdBuff_forDraw == false) texture::Draw(spdPot, spdSrcRect, spdDestRect);
+    if(player->isJmpBuff_forDraw == false) texture::Draw(jmpPot, jmpSrcRect, jmpDestRect);
+    if(player->isLag_forDraw == false) texture::Draw(lagPot, lagSrcRect, lagDestRect);
+    if(player->godPot_draw == false) texture::Draw(godPot, godSrcRect, godDestRect);
     //mapper->DrawMap(player->Camera);
 
     SDL_RenderPresent(renderer);
@@ -254,7 +278,12 @@ void Game::clean()
     babe = NULL;
     SDL_DestroyTexture(victory);
     victory = NULL;
-
+    SDL_DestroyTexture(spdPot);
+    spdPot = NULL;
+    SDL_DestroyTexture(jmpPot);
+    jmpPot = NULL;
+    SDL_DestroyTexture(lagPot);
+    lagPot = NULL;
     player->ObjectClose();
     player = NULL;
     mapper->CloseMap();
