@@ -4,7 +4,6 @@
 #include "Map"
 
 SDL_Rect babeRect2 = { 592,112,48,48 };
-SDL_Rect spdRect2 = { 300,3760,32,32 };
 
 /// <summary>
 /// Collision Check Boolean.

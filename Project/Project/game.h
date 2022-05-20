@@ -4,6 +4,8 @@
 
 #include "Header.h"
 #include <iostream>
+#include "textObj.h"
+#include <fstream>
 
 static const int SCREEN_WIDTH = 960;
 static const int SCREEN_HEIGHT = 720;

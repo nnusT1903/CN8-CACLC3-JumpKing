@@ -2,6 +2,7 @@
 #include "texture.h"
 #include "GameObject.h"
 #include "Map.h"
+#include "textObj.h"
 
 
 
@@ -10,12 +11,14 @@ using namespace std;
 SDL_Texture* background = NULL;
 SDL_Texture* foreground = NULL;
 SDL_Texture* victory = NULL;
+SDL_Texture* bestScore = NULL;
 SDL_Texture* babe = NULL;
 SDL_Texture* spdPot = NULL;
 SDL_Texture* jmpPot = NULL;
 SDL_Texture* lagPot = NULL;
 SDL_Texture* godPot = NULL; // erase lag effect
 Mix_Music* Music = NULL;
+TTF_Font* font = NULL;
 
 
 SDL_Rect spdSrcRect = { 0,0,32,32 };
@@ -38,10 +41,11 @@ SDL_Rect babeSrcRect = { 0,0,48,48 };
 SDL_Rect babeRect = { 592,112,48,48 };
 SDL_Rect babeDestRect = { 592,112,48,48 };
 
-
+Uint32 score, hScore, timeVal;
 
 SDL_Rect BgSrc = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT }, BgDest = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
 GameObject* player;
+textObj timeGame;
 Map* mapper;
 
 
@@ -75,6 +79,9 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             cout << "Renderer created!" << endl;
         }
+        if (TTF_Init() == 0) {
+            font = TTF_OpenFont("font/font2.ttf", 24);
+        }
         isRunning = true;
     }
     else {
@@ -95,6 +102,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     godPot = texture::LoadTexture("image/god_pot.png"); 
     babe = texture::LoadTexture("image/babe.png");
     victory = texture::LoadTexture("image/victory.png");
+    bestScore = texture::LoadTexture("image/highScore.png");
 
     //Icon loading.
     string icoName = "image/icon.bmp";
@@ -207,6 +215,17 @@ void Game::update()
         {
             Mix_PlayMusic(Music, -1);
         }
+
+        //Saving best score to file
+        score = timeVal;
+        cout << score;
+        ifstream input("bestScore.txt");
+        input >> hScore;
+        ofstream output("bestScore.txt");
+        if (score < hScore || hScore == 0) {
+            output << score;
+        }
+        else output << hScore;
     }
     if (player->isWin == false)
     {
@@ -218,7 +237,6 @@ void Game::render()
     SDL_RenderClear(renderer);
     mapper->DrawMap(player->Camera);
     texture::Draw(background, player->Camera, BgDest);
-    // texture::Draw(foreground, player->Camera, BgDest); //for checking the blocks whether they fit or not
     player->Render();
     texture::Draw(foreground, player->Camera, BgDest);
     texture::Draw(babe, babeSrcRect, babeDestRect);
@@ -226,8 +244,15 @@ void Game::render()
     if(player->isJmpBuff_forDraw == false) texture::Draw(jmpPot, jmpSrcRect, jmpDestRect);
     if(player->isLag_forDraw == false) texture::Draw(lagPot, lagSrcRect, lagDestRect);
     if(player->godPot_draw == false) texture::Draw(godPot, godSrcRect, godDestRect);
-    //mapper->DrawMap(player->Camera);
-
+    
+    //Time counting
+    string strTime = "TIME: ";
+    timeVal = SDL_GetTicks() / 1000;
+    string timeRes = to_string(timeVal);
+    strTime += timeRes;
+    timeGame.setText(strTime);
+    timeGame.loadFromRenderedText(font, renderer);
+    timeGame.renderText(renderer, 25, 15);
     SDL_RenderPresent(renderer);
 
 }
@@ -259,9 +284,16 @@ void Game::retry()
             break;
         }
     }
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, victory, NULL, NULL);
-    SDL_RenderPresent(renderer);
+    if (score < hScore || hScore == 0) {
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, bestScore, NULL, NULL);
+        SDL_RenderPresent(renderer);
+    }
+    else {
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, victory, NULL, NULL);
+        SDL_RenderPresent(renderer);
+    }
 }
 
 void Game::clean()
@@ -278,6 +310,8 @@ void Game::clean()
     babe = NULL;
     SDL_DestroyTexture(victory);
     victory = NULL;
+    SDL_DestroyTexture(bestScore);
+    bestScore = NULL;
     SDL_DestroyTexture(spdPot);
     spdPot = NULL;
     SDL_DestroyTexture(jmpPot);
@@ -288,7 +322,10 @@ void Game::clean()
     player = NULL;
     mapper->CloseMap();
     mapper = NULL;
+    TTF_CloseFont(font);
+    font = NULL;
 
+    TTF_Quit();
     IMG_Quit();
     Mix_Quit();
     SDL_Quit();
