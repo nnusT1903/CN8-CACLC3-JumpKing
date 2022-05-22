@@ -23,7 +23,6 @@ private:
 public:
     Map();
     ~Map();
-
     void LoadMap(int arr[240][60]);
     void DrawMap(SDL_Rect Camera);
     void DrawBabe(SDL_Rect Camera);

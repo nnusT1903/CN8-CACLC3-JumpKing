@@ -9,6 +9,15 @@
 
 using namespace std;
 
+enum textColors{
+	white = 0,
+	black = 1,
+	red = 2,
+	yellow = 3,
+	green = 4,
+	blue = 5,
+};
+
 class textObj
 {
 public:
@@ -20,6 +29,7 @@ public:
 		SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL,
 		SDL_RendererFlip flip = SDL_FLIP_NONE);
 	void setText(const string& text) { strVal = text; }
+	void setTextColor(const int& color);
 private:
 	string strVal;
 	SDL_Color textColor;

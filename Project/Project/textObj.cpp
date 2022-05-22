@@ -55,3 +55,29 @@ void textObj::renderText(SDL_Renderer* screen, int x, int y,
 	}
 	SDL_RenderCopyEx(screen, mTexture, clip, &renderQuad, angle, center, flip);
 }
+
+void textObj::setTextColor(const int& color){
+	switch (color){
+		case white:
+			textColor = {255, 255, 255};
+			break;
+		case black:
+			textColor = {0, 0, 0};
+			break;
+		case red:
+			textColor = {255, 0, 0};
+			break;
+		case yellow:
+			textColor = {255, 255, 0};
+			break;
+		case green:
+			textColor = {0, 255, 0};
+			break;
+		case blue:
+			textColor = {0, 0, 255};
+			break;
+		default:
+			textColor = {255, 255, 255};
+			break;
+	}
+}

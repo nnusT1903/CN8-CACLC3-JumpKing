@@ -4,7 +4,7 @@
 #include "Map"
 
 SDL_Rect babeRect2 = { 592,112,48,48 };
-
+//SDL_Rect babeRect2 = { 896,3456,32,32 };
 /// <summary>
 /// Collision Check Boolean.
 /// *literally, coordinations.
@@ -170,6 +170,14 @@ void GameObject::Reset(){
     inputType.right = 3;
     inputType.up = 0;
     inputType.jump = 0;
+
+    isSpdBuff = false;
+    isSpdBuff_forDraw = false;
+    isJmpBuff = false;
+    isJmpBuff_forDraw = false;
+    isLag = false;
+    isLag_forDraw = false;
+    godPot_draw = false;
 }
 
 /// <summary>
@@ -379,8 +387,14 @@ void GameObject::JumpLeft()
     jumpTime = SDL_GetTicks() - startTime;
     status = jumping;
     yvel = -(jumpTime * 0.02);
-    if (isLag == true) xvel = maxxspeed;
-    else xvel = -maxxspeed;
+    if (isLag == true){
+        if(isSpdBuff == true) xvel = maxxspeed+5;
+        else xvel = maxxspeed;
+    }
+    else{
+        if(isSpdBuff == true) xvel = -(maxxspeed+5);
+        else xvel = -maxxspeed;
+    }
     if (yvel > -10) yvel = -10;
     if (yvel < -30) yvel = -30;
 
@@ -394,8 +408,14 @@ void GameObject::JumpLeftBuff()
     jumpTime = (SDL_GetTicks() - startTime);
     status = jumping;
     yvel = -(jumpTime * 0.02);
-    if (isLag == true) xvel = maxxspeed;
-    else xvel = -maxxspeed;
+    if (isLag == true){
+        if(isSpdBuff == true) xvel = maxxspeed+5;
+        else xvel = maxxspeed;
+    }
+    else{
+        if(isSpdBuff == true) xvel = -(maxxspeed+5);
+        else xvel = -maxxspeed;
+    }
     if (yvel > -10) yvel = -10;
     if (yvel < -40) yvel = -40;
 
@@ -410,8 +430,14 @@ void GameObject::JumpRight()
     jumpTime = SDL_GetTicks() - startTime;
     status = jumping;
     yvel = -(jumpTime * 0.02);
-    if (isLag == true) xvel = -maxxspeed;
-    else xvel = maxxspeed;
+    if (isLag == true){
+        if(isSpdBuff == true) xvel = -(maxxspeed+5);
+        else xvel = -maxxspeed;
+    }
+    else{
+        if(isSpdBuff == true) xvel = (maxxspeed+5);
+        else xvel = maxxspeed;
+    }
     if (yvel > -10) yvel = -10;
     if (yvel < -30) yvel = -30;
 
@@ -425,8 +451,14 @@ void GameObject::JumpRightBuff()
     jumpTime = (SDL_GetTicks() - startTime)*2;
     status = jumping;
     yvel = -(jumpTime * 0.02);
-    if (isLag == true) xvel = -maxxspeed;
-    else xvel = maxxspeed;
+    if (isLag == true){
+        if(isSpdBuff == true) xvel = -(maxxspeed+5);
+        else xvel = -maxxspeed;
+    }
+    else{
+        if(isSpdBuff == true) xvel = (maxxspeed+5);
+        else xvel = maxxspeed;
+    }
     if (yvel > -10) yvel = -10;
     if (yvel < -40) yvel = -40;
 

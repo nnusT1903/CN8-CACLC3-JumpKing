@@ -31,6 +31,7 @@ public:
     Game();
     ~Game();
 
+    int createMenu(TTF_Font* font);
     void init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
 
     void handleEvents();
@@ -39,6 +40,7 @@ public:
     void retry();
     void clean();
 
+    bool checkSelected(const int& x, const int& y, const SDL_Rect& rect);
     bool running(); 
     bool winning(); 
     bool retrying(); 

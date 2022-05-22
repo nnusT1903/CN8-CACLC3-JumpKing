@@ -8,6 +8,7 @@
 
 using namespace std;
 
+SDL_Texture* imgStart = NULL;
 SDL_Texture* background = NULL;
 SDL_Texture* foreground = NULL;
 SDL_Texture* victory = NULL;
@@ -19,6 +20,7 @@ SDL_Texture* lagPot = NULL;
 SDL_Texture* godPot = NULL; // erase lag effect
 Mix_Music* Music = NULL;
 TTF_Font* font = NULL;
+TTF_Font* fontMenu = NULL;
 
 
 SDL_Rect spdSrcRect = { 0,0,32,32 };
@@ -41,7 +43,7 @@ SDL_Rect babeSrcRect = { 0,0,48,48 };
 SDL_Rect babeRect = { 592,112,48,48 };
 SDL_Rect babeDestRect = { 592,112,48,48 };
 
-Uint32 score, hScore, timeVal;
+Uint32 score, hScore, timeVal, startTime;
 
 SDL_Rect BgSrc = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT }, BgDest = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
 GameObject* player;
@@ -57,6 +59,83 @@ Game::Game()
 Game::~Game()
 {}
 
+int Game::createMenu(TTF_Font* font){
+    imgStart = texture::LoadTexture("image/main_image/main_menu.png");
+    // texture::Draw(imgStart, player->Camera, BgDest);
+    if (imgStart == NULL) return 1;
+    texture::Draw(imgStart, player->Camera, BgDest);
+    const int numMenu = 2;
+    // 0 = start, 1 = keys info, 2 = exit;
+
+    SDL_Rect menuRect[numMenu];
+
+    menuRect[0].x = 550; 
+    menuRect[0].y = 360;
+    menuRect[0].w = 960;
+    menuRect[0].h = 32;
+
+    menuRect[1].x = 550; 
+    menuRect[1].y = 392;
+    menuRect[1].w = 960;
+    menuRect[1].h = 32;
+
+
+    textObj textMenu[numMenu];
+
+    textMenu[0].setText("New Game");
+    textMenu[0].setTextColor(white);
+
+    textMenu[1].setText("Exit");
+    textMenu[1].setTextColor(white);
+
+    bool chosen[numMenu] = {false, false};
+
+    SDL_Event mouseEvent;
+    while(true){
+        texture::Draw(imgStart, player->Camera, BgDest);
+        for (int i=0; i < numMenu; i++){
+            textMenu[i].loadFromRenderedText(font, renderer);
+            textMenu[i].renderText(renderer, menuRect[i].x, menuRect[i].y);
+        }
+        while(SDL_PollEvent(&mouseEvent)){
+            switch(mouseEvent.type){
+                case SDL_QUIT:
+                    return 1;
+                case SDL_MOUSEMOTION:
+                    for (int i=0; i<numMenu; i++){
+                        if(checkSelected(mouseEvent.motion.x, mouseEvent.motion.y, menuRect[i])){
+                            if (chosen[i] == false){
+                                chosen[i] = true;
+                                textMenu[i].setTextColor(red);
+                            }
+                        } else {
+                            if (chosen[i] == true){
+                                chosen[i] = false;
+                                textMenu[i].setTextColor(white);
+                            }
+                        }
+                    }
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    for (int i=0; i < numMenu; i++){
+                        if(checkSelected(mouseEvent.motion.x, mouseEvent.motion.y, menuRect[i])){
+                                return i;
+                            }
+                        }
+                    break;
+                case SDL_KEYDOWN:
+                    if (mouseEvent.key.keysym.sym == SDLK_ESCAPE){
+                        return 1;
+                    }
+                default:
+                    break;
+            };
+        }
+        SDL_RenderPresent(renderer);
+    }
+
+    return 0;
+}
 void Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
     int flag = 0;
@@ -82,10 +161,13 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         if (TTF_Init() == 0) {
             font = TTF_OpenFont("font/font2.ttf", 24);
         }
-        isRunning = true;
+        if(TTF_Init() == 0){
+            fontMenu = TTF_OpenFont("font/font2.ttf", 32);
+        }
+        // isRunning = true;
     }
     else {
-        isRunning = false;
+        // isRunning = false;
     }
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
@@ -113,6 +195,17 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
     player = new GameObject(64, LEVEL_HEIGHT - 100);
     mapper = new Map();
+    startTime = 0;
+
+    int menuCheck = createMenu(fontMenu);
+    if (menuCheck == 0){
+        isRunning = true;
+        startTime = SDL_GetTicks()/1000;
+    } else if (menuCheck == 1){  
+        isRunning = false;
+    } else {
+        isRunning = false;
+    }
 }
 
 void Game::handleEvents()
@@ -247,10 +340,11 @@ void Game::render()
     
     //Time counting
     string strTime = "TIME: ";
-    timeVal = SDL_GetTicks() / 1000;
+    timeVal = SDL_GetTicks() / 1000 - startTime;
     string timeRes = to_string(timeVal);
     strTime += timeRes;
     timeGame.setText(strTime);
+    timeGame.setTextColor(red);
     timeGame.loadFromRenderedText(font, renderer);
     timeGame.renderText(renderer, 25, 15);
     SDL_RenderPresent(renderer);
@@ -277,7 +371,9 @@ void Game::retry()
             win = false;
             player->isWin = false;
             isRetrying = true;
+            startTime = SDL_GetTicks()/1000;
             player->Reset();
+            mapper = new Map();
             break;
         case SDLK_n:
             isRunning = false;
@@ -302,6 +398,8 @@ void Game::clean()
     window = NULL;
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
+    SDL_DestroyTexture(imgStart);
+    imgStart = NULL;
     SDL_DestroyTexture(background);
     background = NULL;
     SDL_DestroyTexture(foreground);
@@ -332,6 +430,11 @@ void Game::clean()
     cout << "Game cleaned" << endl;
 }
 
+bool Game::checkSelected(const int& x, const int& y, const SDL_Rect& rect)
+{
+    if (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h) return true;
+    return false;
+}
 bool Game::running()
 {
     return isRunning;
