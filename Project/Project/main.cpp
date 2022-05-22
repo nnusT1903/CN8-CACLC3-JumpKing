@@ -1,8 +1,6 @@
 #include <iostream>
 #include <string>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
+#include "Header.h"
 #include <stdio.h>
 #include "Game.h"
 #include "texture.h"
