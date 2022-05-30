@@ -273,6 +273,7 @@ void Game::handleEvents()
                 break;
             }
             case SDLK_SPACE:
+                if (pause) break;
                 //if(player->status != jumping && player->status != charging)
                 if (player->onGround == true)
                 {
