@@ -17,7 +17,6 @@ static const int TILE_NUMBERS = 3;
 static const int LEVEL_WIDTH = 960;
 static const int LEVEL_HEIGHT = 3840;
 
-
 class Game
 {
 private:
@@ -26,11 +25,12 @@ private:
     bool win;
     bool isRetrying;
     SDL_Window* window = NULL;
+    
 
 public:
     Game();
     ~Game();
-
+    bool pause = false;
     int createMenu(TTF_Font* font);
     void init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
 

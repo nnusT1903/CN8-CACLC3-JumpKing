@@ -220,32 +220,36 @@ void Game::handleEvents()
     {
         switch (event.key.keysym.sym)
         {
-            //if(player->onGround == true)
+            case SDLK_RIGHT:
             {
-        case SDLK_RIGHT:
-        {
-            player->inputType.right = 1;
-            player->inputType.left = 0;
-            break;
-        }
-        case SDLK_LEFT:
-        {
-            player->inputType.left = 1;
-            player->inputType.right = 0;
-            break;
-        }
-        case SDLK_UP:
-        {
-            player->inputType.up = 1;
-            break;
-        }
+                if (pause) break;
+                player->inputType.right = 1;
+                player->inputType.left = 0;
+                break;
+            }
+            case SDLK_LEFT:
+            {
+                if (pause) break;
+                player->inputType.left = 1;
+                player->inputType.right = 0;
+                break;
+            }
+            case SDLK_UP:
+            {
+                if (pause) break;
+                player->inputType.up = 1;
+                break;
+            }
 
-        case SDLK_SPACE:
-            //if(player->status != jumping)
-        {
-            player->PrepareJump();
-            break;
-        }
+            case SDLK_SPACE:
+            {
+                if (pause) break;
+                player->PrepareJump();
+                break;
+            }
+            case SDLK_p:
+            {
+                pause = !pause;
             }
         }
     }
@@ -253,44 +257,45 @@ void Game::handleEvents()
     {
         switch (event.key.keysym.sym)
         {
-        case SDLK_RIGHT:
-        {
-            player->inputType.right = 2;
-            break;
-        }
-        case SDLK_LEFT:
-        {
-            player->inputType.left = 2;
-            break;
-        }
-        case SDLK_UP:
-        {
-            player->inputType.up = 2;
-            break;
-        }
-        case SDLK_SPACE:
-            //if(player->status != jumping && player->status != charging)
-            if (player->onGround == true)
+            case SDLK_RIGHT:
             {
-                switch (player->inputType.jump)
-                {
-                case 0:
-                    if (player->isJmpBuff == true)player->JumpBuff();
-                    else player->Jump();
-                    break;
-
-                case 1:
-                    if (player->isJmpBuff == true)player->JumpRightBuff();
-                    else player->JumpRight();
-                    break;
-
-                case 2:
-                    if (player->isJmpBuff == true)player->JumpLeftBuff();
-                    else player->JumpLeft();
-                    break;
-                }
+                player->inputType.right = 2;
+                break;
             }
+            case SDLK_LEFT:
+            {
+                player->inputType.left = 2;
+                break;
+            }
+            case SDLK_UP:
+            {
+                player->inputType.up = 2;
+                break;
+            }
+            case SDLK_SPACE:
+                //if(player->status != jumping && player->status != charging)
+                if (player->onGround == true)
+                {
+                    switch (player->inputType.jump)
+                    {
+                    case 0:
+                        if (player->isJmpBuff == true)player->JumpBuff();
+                        else player->Jump();
+                        break;
+
+                    case 1:
+                        if (player->isJmpBuff == true)player->JumpRightBuff();
+                        else player->JumpRight();
+                        break;
+
+                    case 2:
+                        if (player->isJmpBuff == true)player->JumpLeftBuff();
+                        else player->JumpLeft();
+                        break;
+                    }
+                }
         }
+        
     }
 }
 void Game::update()
@@ -347,6 +352,23 @@ void Game::render()
     timeGame.setTextColor(red);
     timeGame.loadFromRenderedText(font, renderer);
     timeGame.renderText(renderer, 25, 15);
+
+    if (pause) {
+        SDL_Rect rPause;
+        rPause.x = 0;
+        rPause.y = 0;
+        rPause.w = 960;
+        rPause.h = 720;
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
+        SDL_RenderFillRect(renderer, &rPause);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_Texture* texture = IMG_LoadTexture(renderer, "play-128.png");
+        rPause.x = SCREEN_WIDTH / 2 - 45;
+        rPause.y = SCREEN_HEIGHT / 2 - 45;
+        SDL_QueryTexture(texture, NULL, NULL, &rPause.w, &rPause.h);
+        SDL_RenderCopy(renderer, texture, NULL, &rPause);
+    }
     SDL_RenderPresent(renderer);
 
 }

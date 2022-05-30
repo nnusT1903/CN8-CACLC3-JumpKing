@@ -28,7 +28,7 @@ public:
     void DrawBabe(SDL_Rect Camera);
     void CloseMap();
     bool checkCollision(SDL_Rect a, SDL_Rect b);
-
+    void init(int arr[240][60]);
     friend void GameObject::Update(SDL_Rect Tile[][60], int Mapping[][60]);
     friend bool Collide(SDL_Rect Tile[], int Mapping[][60]);
     friend void Game::update();
